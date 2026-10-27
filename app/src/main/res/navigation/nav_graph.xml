@@ -22,4 +22,12 @@
         android:name="com.ifpr.androidapptemplatear.ui.ProfileFragment"
         android:label="@string/profile"
         tools:layout="@layout/fragment_profile" />
+
+
+    <fragment
+        android:id="@+id/navigation_garagem"
+        android:name="com.ifpr.androidapptemplatear.ui.GaragemFragment"
+        android:label="Minha Garagem"
+        tools:layout="@layout/fragment_garagem" />
+
 </navigation>
