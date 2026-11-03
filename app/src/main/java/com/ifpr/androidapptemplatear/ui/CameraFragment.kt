@@ -22,9 +22,17 @@ import io.github.sceneview.ar.node.PlacementMode
 import io.github.sceneview.math.Position
 import okio.IOException
 import java.io.File
+import android.media.MediaPlayer
+import com.google.android.material.button.MaterialButton
 
 class CameraFragment : Fragment() {
 
+
+    private lateinit var soundButton: MaterialButton
+
+    private var mediaPlayer: MediaPlayer? = null
+
+    private var soundEnabled = true
     private lateinit var sceneView: ArSceneView
     private lateinit var modelNode: ArModelNode
     private lateinit var placeButton: ExtendedFloatingActionButton
@@ -42,6 +50,7 @@ class CameraFragment : Fragment() {
     private val binding get() = _binding!!
 
     override fun onCreateView(
+
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -60,6 +69,27 @@ class CameraFragment : Fragment() {
 
         placeButton = view.findViewById(R.id.place)
 
+
+        soundButton = view.findViewById(R.id.btnSom)
+
+
+        soundButton.setOnClickListener {
+            soundEnabled = !soundEnabled
+
+            if (soundEnabled) {
+                if (mediaPlayer == null) {
+                    iniciarSom()
+                } else if (mediaPlayer?.isPlaying == false) {
+                    mediaPlayer?.start()
+                }
+            } else {
+                mediaPlayer?.pause()
+            }
+
+            atualizarBotaoSom()
+        }
+
+
         placeButton.setOnClickListener {
             placeModel()
         }
@@ -67,16 +97,24 @@ class CameraFragment : Fragment() {
         return view
     }
 
+
     override fun onDestroyView() {
-        super.onDestroyView()
+        mediaPlayer?.release()
+        mediaPlayer = null
+
         _binding = null
+        super.onDestroyView()
     }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        iniciarSom()
+        atualizarBotaoSom()
         checkCameraPermission()
     }
+
 
     private fun placeModel() {
         modelNode.anchor()
@@ -87,6 +125,19 @@ class CameraFragment : Fragment() {
     }
 
     private fun checkCameraPermission() {
+
+        mediaPlayer = MediaPlayer.create(
+            requireContext(),
+            R.raw.ambiente
+        )?.apply {
+            isLooping = true
+
+            if (soundEnabled) {
+                start()
+            }
+        }
+
+
         if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.CAMERA)
             != PackageManager.PERMISSION_GRANTED
         ) {
@@ -111,6 +162,29 @@ class CameraFragment : Fragment() {
         } else {
             Toast.makeText(requireContext(), "Permissão de câmera negada", Toast.LENGTH_LONG).show()
         }
+    }
+
+    private fun iniciarSom() {
+        if (mediaPlayer != null) return
+
+        mediaPlayer = MediaPlayer.create(
+            requireContext(),
+            R.raw.ambiente
+        )?.apply {
+            isLooping = true
+
+            if (soundEnabled) {
+                start()
+            }
+        }
+    }
+
+    private fun atualizarBotaoSom() {
+        soundButton.text = if (soundEnabled) "Som: ON" else "Som: OFF"
+
+        soundButton.contentDescription =
+            if (soundEnabled) "Desligar som ambiente"
+            else "Ligar som ambiente"
     }
 
     private fun initAR() {
